@@ -1,12 +1,13 @@
 import { createMachine } from "xstate";
+import { Context, Events } from "./machine-types";
 
 export const machine = createMachine(
   {
     context: {
-      audioRef: "null",
+      audioRef: null,
       currentTime: 0,
-      trackSource: "null",
-      audioContext: "null",
+      trackSource: null,
+      audioContext: null,
     },
     id: "Audio Player",
     initial: "Init",
@@ -88,22 +89,8 @@ export const machine = createMachine(
       },
     },
     types: {
-      events: {} as
-        | { type: "end" }
-        | { type: "play" }
-        | { type: "time" }
-        | { type: "error" }
-        | { type: "pause" }
-        | { type: "loaded" }
-        | { type: "loading" }
-        | { type: "restart" }
-        | { type: "init-error" },
-      context: {} as {
-        currentTime: number;
-        audioRef: string;
-        trackSource: string;
-        audioContext: string;
-      },
+      events: {} as Events,
+      context: {} as Context,
     },
   },
   {
