@@ -1,5 +1,7 @@
-import { setup } from "xstate";
+import { assign, setup } from "xstate";
 import { Context, Events } from "./machine-types";
+import { onLoad, onPause } from "./effect";
+import { Effect } from "effect";
 
 export const machine = setup({
   types: {
@@ -7,12 +9,23 @@ export const machine = setup({
     context: {} as Context,
   },
   actions: {
-    onLoad: ({ context, event }) => { },
+    onLoad: assign(({ self }, { audioRef }: { audioRef: HTMLAudioElement }) =>
+      onLoad({ audioRef, audioContext: null, trackSource: null }).pipe(
+        Effect.tap(() =>
+          Effect.sync(() => self.send({ type: "loaded" }))
+        ),
+        Effect.tapError(({ message }) =>
+          Effect.sync(() => self.send({ type: "error", params: { message } }))
+        ),
+        Effect.map(({ context  }) => context ),
+        Effect.catchTag("OnLoadError", ({ context }) => Effect.succeed(context)),
+        Effect.runSync
+      )),
     onError: ({ context, event }) => { },
-    onPause: ({ context, event }) => { },
+    onPause: ({ context: { audioRef } }) => onPause({ audioRef }).pipe(Effect.runSync),
     onRestart: ({ context, event }) => { },
-    onTimeUpdate: ({ context, event }) => { },
-    onPlay: ({ context, event }) => {}
+    onTimeUpdate: assign((_, { updatedTime }: { updatedTime: number }) => ({ currentTime: updatedTime })),
+    onPlay: ({ context, event }) => { }
   },
   actors: {},
   guards: {},
@@ -100,6 +113,9 @@ export const machine = setup({
                 target: "Playing",
                 actions: {
                   type: "onTimeUpdate",
+                  params: ({ event }) => ({
+                    updatedTime: event.params.updatedTime,
+                  }),
                 },
               },
             },
