@@ -1,7 +1,23 @@
-import { createMachine } from "xstate";
+import { setup } from "xstate";
 import { Context, Events } from "./machine-types";
 
-export const machine = createMachine(
+export const machine = setup({
+  types: {
+    events: {} as Events,
+    context: {} as Context,
+  },
+  actions: {
+    onLoad: ({ context, event }) => { },
+    onError: ({ context, event }) => { },
+    onPause: ({ context, event }) => { },
+    onRestart: ({ context, event }) => { },
+    onTimeUpdate: ({ context, event }) => { },
+    onPlay: ({ context, event }) => {}
+  },
+  actors: {},
+  guards: {},
+  delays: {},
+}).createMachine(
   {
     context: {
       audioRef: null,
@@ -64,6 +80,9 @@ export const machine = createMachine(
             },
           },
           Playing: {
+            entry: {
+              type: "onPlay",
+            },
             on: {
               pause: {
                 target: "Paused",
@@ -88,21 +107,5 @@ export const machine = createMachine(
         },
       },
     },
-    types: {
-      events: {} as Events,
-      context: {} as Context,
-    },
-  },
-  {
-    actions: {
-      onLoad: ({ context, event }) => {},
-      onError: ({ context, event }) => {},
-      onPause: ({ context, event }) => {},
-      onRestart: ({ context, event }) => {},
-      onTimeUpdate: ({ context, event }) => {},
-    },
-    actors: {},
-    guards: {},
-    delays: {},
   },
 );
